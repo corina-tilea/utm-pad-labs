@@ -23,11 +23,13 @@ import org.apache.commons.lang3.StringUtils;
 public class AppBrokerThread extends Thread {
     Socket socket = null;
     private String threadId;
+    private String clientType;
 
     public AppBrokerThread(Socket socket, String clientType) {
         super("AppBrokerThread");
         this.socket = socket;
         threadId = RandomStringUtils.randomAlphanumeric(8);
+        this.clientType = clientType;
     }
 
     public void run() {
@@ -42,14 +44,14 @@ public class AppBrokerThread extends Thread {
             //outputLine = serverProtocol.processInput(null);
             //pw.println(outputLine);
            // pw.flush();
-
+           //if(clientType.equals(Chat))
             while ((inputLine = br.readLine()) != null) {
                 //outputLine = serverProtocol.processInput(inputLine);
                 //pw.println(inputLine);
                 String msgs  = "MSG_FROM_CLIENT "+"["+threadId+"] : "+ inputLine;
-                AppBroker.item_q.put(msgs);
-                System.out.println(msgs+ " in queue="+AppBroker.item_q.size());
-                
+                AppBroker.msgsQueue.put(msgs);
+                System.out.println(msgs+ " in queue="+AppBroker.msgsQueue.size());
+                pw.write(msgs);
                 pw.flush();
                 if (inputLine.equals("Bye"))
                     break;

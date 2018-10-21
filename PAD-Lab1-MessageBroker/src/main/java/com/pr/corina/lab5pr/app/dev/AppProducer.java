@@ -20,57 +20,42 @@ import java.util.logging.Logger;
  * @author corina
  */
 public class AppProducer {
+
     public static void main(String[] args) throws InterruptedException {
-        Socket kkSocket = null;
-        //PrintWriter pw = null;
-        //BufferedReader br = null;
+        Socket socket = null;
 
         PrintStream out = null;
         BufferedReader in = null;
         try {
-            kkSocket = new Socket("127.0.0.1", AppServer.PORT_NR);
-            //pw = new PrintWriter(kkSocket.getOutputStream());
-            //br = new BufferedReader(new InputStreamReader(System.in));
-             //Input Output Streams
-             out = new PrintStream(kkSocket.getOutputStream());
-             in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
-            //new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
-            
+            socket = new Socket("127.0.0.1", AppServer.PORT_NR);
+            //Input Output Streams
+            out = new PrintStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            int counterMsgs = 0;
+
+            while (true) {
+                System.out.println("Produced Messages:");
+                counterMsgs++;
+                String itemMsgs = "Message nr:" + counterMsgs;
+                out.println(itemMsgs);
+                Thread.sleep(new Random().nextInt(3000 - 1000) + 1000);
+            }
+
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host: taranis");
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to: taranis");
-        }
-        
-        
-        
-   
-
-        if (kkSocket != null && out != null && in != null) {
-            
+        } finally {
             try {
-                StringBuffer buf = new StringBuffer(50);
-                int c=0;
-                //String fromServer;
-
-                while (true) {
-                    c++;
-                    out.println("Message Custom : "+c);
-                    Thread.sleep(new Random().nextInt(3000-1000)+1000);
-                   // buf.setLength(0);
-                }
-
-               
-               
-            }finally{
-                try {
-                    out.close();
-                    in.close();
-                    kkSocket.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(AppProducer.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                out.close();
+                in.close();
+                socket.close();
+            } catch (IOException ex) {
+                Logger.getLogger(AppProducer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
     }
 }
+
+
