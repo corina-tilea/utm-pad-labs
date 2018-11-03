@@ -5,6 +5,8 @@
  */
 package com.pr.corina.lab5pr.app.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,6 +17,7 @@ public class Message {
     
     private String msgsContent;
     private String format;
+    private List<Long> receiverIdList = new ArrayList();
 
     public Message(String msgsContent, String format) {
         this.msgsContent = msgsContent;
@@ -68,6 +71,12 @@ public class Message {
 
     @Override
     public String toString() {
+        /*String receivers = "";
+        for (int i = 0; i < receiverIdList.size(); i++) {
+            receivers += receiverIdList.get(i);
+            if(i<receiverIdList.size()-1)
+                receivers += ",";
+        }*/
         return format+";"+msgsContent;
     }
 

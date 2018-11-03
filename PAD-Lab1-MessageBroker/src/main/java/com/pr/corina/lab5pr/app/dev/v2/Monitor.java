@@ -11,6 +11,9 @@ import com.pr.corina.lab5pr.utils.Serializer;
 import com.pr.corina.lab5pr.utils.TransactionTypes;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -18,7 +21,8 @@ import java.util.logging.Logger;
 
 public class Monitor {
 
-    public static BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
+    public static BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    public static BlockingQueue<ConsumerThread> subscribedConsumers = new LinkedBlockingQueue<>();
     static int capacity = 100;
     
      public static void main(String args[]) throws IOException, InterruptedException {
@@ -80,6 +84,8 @@ public class Monitor {
                         item = consume();
                         String[] itemValues = item.split(";");
                         itemType = itemValues[0];
+                        
+                        
                         itemMessage = itemValues[1];
                         if(!itemType.equals(TransactionTypes.XML)){
                             Transaction readTransaction = Serializer.deserializeFromJson(itemMessage);
@@ -89,7 +95,9 @@ public class Monitor {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
+                    //Set receivers
+                    printSubscriberListSize();
+                    itemMessage = computeReceiversParam()+itemMessage;
                     System.out.println("Consumer consumed-" + itemMessage);
                     out.println(itemMessage);
                     
@@ -166,6 +174,18 @@ public class Monitor {
 
         return val;
 
+    }
+    
+    public static String computeReceiversParam(){
+        String receivers = "";
+        for(ConsumerThread consumerTh : subscribedConsumers){
+            receivers += consumerTh.getId()+",";
+        }
+        return receivers;
+    }
+    
+    public static void printSubscriberListSize(){
+         System.out.println("SIZE SUBSCR = "+subscribedConsumers.size());
     }
 
    

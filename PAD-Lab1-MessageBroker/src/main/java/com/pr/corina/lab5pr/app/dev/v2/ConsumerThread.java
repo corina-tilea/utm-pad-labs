@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class ConsumerThread extends Thread{
     
     private final String consumerType;
+    private Long consumerID;
     
     public ConsumerThread(String consumerType){
         super();
@@ -45,10 +46,27 @@ public class ConsumerThread extends Thread{
          }
      }
      
-     public static void main(String[] args) {
+     public static void main(String[] args) throws InterruptedException {
         ConsumerThread consumerTh = new ConsumerThread(TransactionTypes.JSON);
+        consumerTh.setConsumerID(Monitor.subscribedConsumers.size()+1L);
+        Monitor.subscribedConsumers.put(consumerTh);
+        System.out.println("subscribedConsumers="+Monitor.subscribedConsumers.size());
+        
         consumerTh.run();
     }
+     
+     
+     
+     //Getters & Setters
+
+    public Long getConsumerID() {
+        return consumerID;
+    }
+
+    public void setConsumerID(Long consumerID) {
+        this.consumerID = consumerID;
+    }
+     
      
     
 }
