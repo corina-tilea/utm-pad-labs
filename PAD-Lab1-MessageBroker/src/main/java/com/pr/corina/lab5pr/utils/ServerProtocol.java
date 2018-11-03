@@ -4,10 +4,8 @@
  * and open the template in the editor.
  */
 
-package com.pr.corina.lab5pr.app.dev;
+package com.pr.corina.lab5pr.utils;
 
-import com.pr.corina.lab5pr.utils.JokesManager;
-import com.pr.corina.lab5pr.utils.PasswordManager;
 import com.pr.corina.lab5pr.utils.Levenshtein;
 import com.pr.corina.lab5pr.utils.ChatConstants;
 import java.text.MessageFormat;
@@ -51,11 +49,11 @@ public class ServerProtocol {
                 String dateStr=dateFormat.format(date);
                 theOutput=ChatConstants.MSG_CURRENT_TIME+dateStr;
             }else if(theInput.startsWith(ChatConstants.CMD_JOKE)){
-                JokesManager jokesManager=new JokesManager();
-                theOutput=jokesManager.getRandomJoke();
+                //JokesManager jokesManager= null;//new JokesManager();
+               // theOutput=jokesManager.getRandomJoke();
             
             }else if(theInput.startsWith(ChatConstants.CMD_PASSWORD)){
-                theOutput=PasswordManager.generatePassword();
+                //theOutput=AppUtils.generatePassword();
             }else{
                 
                 String proposedCommand=Levenshtein.getMinumumDistanceToComand(theInput);

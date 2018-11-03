@@ -13,12 +13,12 @@ import org.apache.commons.text.RandomStringGenerator;
  *
  * @author corina
  */
-public class PasswordManager {
+public class AppUtils {
     
     
-    public static String generatePassword(){
+    public static String generateAlphaString(){
         RandomStringGenerator randomStringGenerator =new RandomStringGenerator.Builder()
-                    .withinRange('0', 'z')
+                    .withinRange('a', 'z')
                     .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS)
                     .build();
         return  randomStringGenerator.generate(12);
