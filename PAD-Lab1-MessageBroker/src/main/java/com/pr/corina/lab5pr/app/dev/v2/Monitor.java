@@ -6,6 +6,7 @@ package com.pr.corina.lab5pr.app.dev.v2;
 // This is client program which connects to server.
 // It send request for Critical Section when it wants to access it
 // It waits till the time Critical Section is empty
+import com.pr.corina.lab5pr.app.models.Message;
 import com.pr.corina.lab5pr.app.models.Transaction;
 import com.pr.corina.lab5pr.utils.Serializer;
 import com.pr.corina.lab5pr.utils.TransactionTypes;
@@ -13,7 +14,12 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -23,6 +29,8 @@ public class Monitor {
 
     public static BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
     public static BlockingQueue<ConsumerThread> subscribedConsumers = new LinkedBlockingQueue<>();
+    public static volatile Map<String,String> subscriberTopic = new HashMap<>();    //<subscribers> <topic>
+    public static volatile Map<String,String> subscriberMessages = new HashMap<>(); //<subscribers> <topic;message>
     static int capacity = 100;
     
      public static void main(String args[]) throws IOException, InterruptedException {
@@ -42,7 +50,17 @@ public class Monitor {
                 while (true) {
                     String item = null;
                     try {
-                        item = in.readLine();
+                        Object[] topicsArray=subscriberTopic.keySet().toArray();
+                        if(topicsArray.length>0){
+                            String firstTopic = subscriberTopic.keySet().stream().findFirst().get();
+                            out.println(firstTopic);
+                        }
+                        
+                        
+                        String call = in.readLine();
+                        String[] responseFragments=call.split(";");
+                        processCall(responseFragments);
+                        
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -72,7 +90,9 @@ public class Monitor {
             public void run() {
                 while (true) {
                     try {
-                        in.readLine();
+                        String call = in.readLine();
+                        String[] callFragments = call.split(";");
+                        processCall(callFragments);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -92,6 +112,12 @@ public class Monitor {
                             itemMessage = Serializer.serializeToXML(readTransaction);
                         }
                         
+                        String[] messagesArray=(String[])subscriberMessages.keySet().toArray();
+                        if(messagesArray.length>0){
+                            String firstTopic = subscriberTopic.get(messagesArray[0]);
+                            out.println(firstTopic);
+                        }
+                        
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -109,6 +135,8 @@ public class Monitor {
                     }
                 }
             }
+
+            
         });
 
         consumer.start();
@@ -188,5 +216,89 @@ public class Monitor {
          System.out.println("SIZE SUBSCR = "+subscribedConsumers.size());
     }
 
+    public static void processCall(String[] callFragments) {
+        int nrOfFragments=callFragments.length;
+        System.out.println("CALL SIZE = "+callFragments.length);
+        if(nrOfFragments > 1){
+            int callType = Integer.valueOf(callFragments[0].trim());
+            if(callType == Message.CONSUMER_DATA){
+                processConsumerMessage(callFragments);
+            } else if(callType == Message.MESSAGE){
+                processProducerMessage(callFragments);
+            }
+        }
+        
+        System.out.println("subscriberTopic SIZE = "+subscriberTopic.size());
+        System.out.println("*** "+subscriberTopic.toString());
+    }
+    
+    public static void processConsumerMessage(String[] callFragments){
+        System.out.println("### Monitor recieved consumer's message ###");
+        String customerId = callFragments[1].trim();
+        String topic = callFragments[2].trim();
+        System.out.println("# CONSUMER_ID = "+customerId + " ... TOPIC = "+topic);
+        addCustomerTopic(Long.valueOf(customerId), topic);   
+    }
+    
+    public static void processProducerMessage(String[] callFragments){
+        String topic = callFragments[1];
+        String message = callFragments[2];
+        
+        String key="";
+        for(Map.Entry<String, String> entry : subscriberTopic.entrySet()){
+            if(entry.getValue().equals(topic)){
+                key = entry.getKey();
+                break; 
+                //System.out.println("#*#*# KEY = "+key+" ... VALUE = "+value);
+            } 
+        }
+        System.out.println("### Monitor recieved producer's message ###");
+        subscriberMessages.put(key, topic+";"+message);
+        System.out.println("***###"+subscriberMessages.toString());
+        
+    }
+    
+    
+    
+    public static synchronized void addCustomerTopic(Long id, String topic){
+        if(subscriberTopic.size()==0){
+            insertIntoMap(id.toString(),topic);
+        }else{
+            modifyMap(id,topic);
+        }
+    }
+
+    private static synchronized void modifyMap(Long id, String topic) {
+        if(subscriberTopic.containsValue(topic)){
+            String key="";
+            String value="";
+            for(Map.Entry<String, String> entry : getEntrySet()){
+                if(entry.getValue().equals(topic)){
+                    key = entry.getKey();
+                    value = entry.getValue();
+                    break; 
+                    //System.out.println("#*#*# KEY = "+key+" ... VALUE = "+value);
+                } 
+            }
+            removeFromMap(key);
+            key=key+";"+id;
+            insertIntoMap(key, value);
+        }else {
+                    insertIntoMap(id.toString(), topic);
+                }
+    
+    }
+    
+    public static synchronized void insertIntoMap(String idList, String topic){
+        subscriberTopic.put(idList, topic);
+    }
+    
+    public static synchronized void removeFromMap(String idList){
+        subscriberTopic.remove(idList);
+    }
+    
+    public static synchronized Set<Entry<String, String>> getEntrySet(){
+        return subscriberTopic.entrySet();
+    }
    
 }

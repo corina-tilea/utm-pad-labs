@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.pr.corina.lab5pr.app.model;
+package com.pr.corina.lab5pr.app.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +15,21 @@ import java.util.Objects;
  */
 public class Message {
     
+    private String topic;
     private String msgsContent;
     private String format;
     private List<Long> receiverIdList = new ArrayList();
+    public static final int CONSUMER_DATA=1;
+    public static final int MESSAGE=2;
+    
 
     public Message(String msgsContent, String format) {
+        this.msgsContent = msgsContent;
+        this.format = format;
+    }
+    
+    public Message(String topic, String msgsContent, String format) {
+        this.topic = topic;
         this.msgsContent = msgsContent;
         this.format = format;
     }
@@ -38,6 +48,14 @@ public class Message {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+    
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     @Override
@@ -77,7 +95,10 @@ public class Message {
             if(i<receiverIdList.size()-1)
                 receivers += ",";
         }*/
-        return format+";"+msgsContent;
+        //return format+";"+msgsContent;
+        return Message.MESSAGE+";"+topic+";"+msgsContent;
     }
+
+    
 
 }

@@ -4,7 +4,7 @@ package com.pr.corina.lab5pr.app.dev.v2;
  * Class extends Thread. 
  */
 
-import com.pr.corina.lab5pr.app.model.Message;
+import com.pr.corina.lab5pr.app.models.Message;
 import com.pr.corina.lab5pr.app.models.Transaction;
 import com.pr.corina.lab5pr.utils.AppUtils;
 import com.pr.corina.lab5pr.utils.Serializer;
@@ -47,7 +47,8 @@ public class ProducerThread extends Thread{
                 //Create Message
                 Transaction transaction = createTransaction(counter);
                 String transactionMsgs = Serializer.serializeToJson(transaction);
-                Message msgs = new Message(transactionMsgs, producerType);
+                String messageTopic = "Volvo";
+                Message msgs = new Message(messageTopic, transactionMsgs, producerType);
                 
                 out.println(msgs);
                 Thread.sleep(3000L);

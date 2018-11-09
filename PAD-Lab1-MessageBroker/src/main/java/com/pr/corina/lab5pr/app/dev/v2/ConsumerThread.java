@@ -5,6 +5,8 @@ package com.pr.corina.lab5pr.app.dev.v2;
  * It waits till the time Critical Section is empty
  */
 
+import com.pr.corina.lab5pr.app.models.Message;
+import com.pr.corina.lab5pr.utils.Serializer;
 import com.pr.corina.lab5pr.utils.TransactionTypes;
 import java.io.*;
 import java.net.*;
@@ -15,6 +17,7 @@ public class ConsumerThread extends Thread{
     
     private final String consumerType;
     private Long consumerID;
+    private String topic;
     
     public ConsumerThread(String consumerType){
         super();
@@ -30,7 +33,17 @@ public class ConsumerThread extends Thread{
              PrintStream out = new PrintStream(s.getOutputStream());
              BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
              
+             
+             
+            // int id=1;
             while(true){
+//                    if(id>4){
+//                        id=1;
+//                        this.setTopic("Audi");
+//                    }
+                    out.println(Message.CONSUMER_DATA+" ; "+ this.consumerID + " ; "+this.topic);
+                    this.setConsumerID(consumerID+1);
+                    //id++;
                     out.println("CONSUME");
         		
                     String item=in.readLine();
@@ -49,6 +62,7 @@ public class ConsumerThread extends Thread{
      public static void main(String[] args) throws InterruptedException {
         ConsumerThread consumerTh = new ConsumerThread(TransactionTypes.JSON);
         consumerTh.setConsumerID(Monitor.subscribedConsumers.size()+1L);
+        consumerTh.setTopic("Volvo");
         Monitor.subscribedConsumers.put(consumerTh);
         System.out.println("subscribedConsumers="+Monitor.subscribedConsumers.size());
         
@@ -66,6 +80,16 @@ public class ConsumerThread extends Thread{
     public void setConsumerID(Long consumerID) {
         this.consumerID = consumerID;
     }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+    
+    
      
      
     
