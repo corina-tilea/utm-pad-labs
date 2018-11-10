@@ -45,6 +45,15 @@ public class ProducerThread extends Thread{
                 String itemMsgs = "Message nr:"+counter;
                 
                 //Create Message
+                Transaction transactionT1 = createTransaction(counter+1000);
+                String transactionMsgsT1 = Serializer.serializeToJson(transactionT1);
+                String messageTopicT1 = "BMW";
+                Message msgs1 = new Message(messageTopicT1, transactionMsgsT1, producerType);
+                
+                out.println(msgs1);
+                Thread.sleep(3000L);
+                
+                //Create Message
                 Transaction transaction = createTransaction(counter);
                 String transactionMsgs = Serializer.serializeToJson(transaction);
                 String messageTopic = "Volvo";
