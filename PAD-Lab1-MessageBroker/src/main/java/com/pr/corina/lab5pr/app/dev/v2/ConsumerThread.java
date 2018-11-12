@@ -36,20 +36,19 @@ public class ConsumerThread extends Thread {
             // int id=1;
             boolean msgsWithListenedTopic = false;
             while (true) {
-//                    if(id>4){
-//                        id=1;
-//                        this.setTopic("Audi");
-//                    }
-                out.println(Message.CONSUMER_DATA + " ; " + this.consumerID + " ; " + this.topic);
+
+                out.println(Message.CONSUMER_DATA + ";" + this.consumerID + ";" + this.topic+";"+this.consumerType);
                 this.setConsumerID(consumerID + 1);
                 //id++;
                 out.println("CONSUME");
 
                 String line = in.readLine();
-                if (line.startsWith("/S/")) {
+                System.out.println("Consumer consumed - " + line);
+                //if(line != null)
+                /*if (line.startsWith("/S/")) {
                     line = line.substring(3);
-                     String[] msgsItems = line.split(";");
-                     String msgsTopic = msgsItems[0];
+                     //String[] msgsItems = line.split(";");
+                     String msgsTopic = line;
                         //String message = msgsItems[1];
                         msgsWithListenedTopic = msgsTopic.equals(topic);
                         //System.out.println("Consumer consumed - " + message);
@@ -60,7 +59,7 @@ public class ConsumerThread extends Thread {
                     
 
                     
-                }
+                }*/
 
                 Thread.sleep(5L);
             }
@@ -74,10 +73,8 @@ public class ConsumerThread extends Thread {
 
     public static void main(String[] args) throws InterruptedException {
         ConsumerThread consumerTh = new ConsumerThread(TransactionTypes.JSON);
-        consumerTh.setConsumerID(Monitor.subscribedConsumers.size() + 1L);
-        consumerTh.setTopic("Volvo");
-        Monitor.subscribedConsumers.put(consumerTh);
-        System.out.println("subscribedConsumers=" + Monitor.subscribedConsumers.size());
+        consumerTh.setConsumerID(1L);
+        consumerTh.setTopic("BMW");
 
         consumerTh.run();
     }
