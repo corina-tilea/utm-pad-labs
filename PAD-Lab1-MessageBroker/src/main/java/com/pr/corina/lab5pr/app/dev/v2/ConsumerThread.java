@@ -72,7 +72,7 @@ public class ConsumerThread extends Thread {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        ConsumerThread consumerTh = new ConsumerThread(TransactionTypes.JSON);
+        ConsumerThread consumerTh = new ConsumerThread(TransactionTypes.XML);
         consumerTh.setConsumerID(1L);
         consumerTh.setTopic("BMW");
 

@@ -96,7 +96,7 @@ public class Message {
                 receivers += ",";
         }*/
         //return format+";"+msgsContent;
-        return Message.MESSAGE+";"+topic+";"+msgsContent;
+        return Message.MESSAGE+";"+topic+";"+msgsContent+";"+format;
     }
 
     

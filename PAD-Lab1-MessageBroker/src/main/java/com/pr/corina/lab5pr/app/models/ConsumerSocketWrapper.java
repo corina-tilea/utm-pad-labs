@@ -17,6 +17,9 @@ public class ConsumerSocketWrapper {
     private String topic;
     private String id;
     private String requiredFormat;
+    private int msgReceiveLimit=10;
+    private int receivedMsgsNr=0;
+    
 
     public ConsumerSocketWrapper() {
     }
@@ -63,9 +66,29 @@ public class ConsumerSocketWrapper {
         this.requiredFormat = requiredFormat;
     }
 
+    public int getMsgReceiveLimit() {
+        return msgReceiveLimit;
+    }
+
+    public void setMsgReceiveLimit(int msgReceiveLimit) {
+        this.msgReceiveLimit = msgReceiveLimit;
+    }
+
+    public int getReceivedMsgsNr() {
+        return receivedMsgsNr;
+    }
+
+    public void setReceivedMsgsNr(int receivedMsgsNr) {
+        this.receivedMsgsNr = receivedMsgsNr;
+    }
+    
+    public void incrementReceiveMsgsNr(){
+        this.receivedMsgsNr++;
+    }
+
     @Override
     public String toString() {
-        return "ConsumerSocketWrapper{" + "socket=" + socket + ", topic=" + topic + ", id=" + id + ", requiredFormat=" + requiredFormat + '}';
+        return "ConsumerSocketWrapper{" + "socket=" + socket + ", topic=" + topic + ", id=" + id + ", requiredFormat=" + requiredFormat + ", msgReceiveLimit=" + msgReceiveLimit + ", receivedMsgsNr=" + receivedMsgsNr + '}';
     }
     
 }

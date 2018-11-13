@@ -1,34 +1,31 @@
 package com.pr.corina.lab5pr.app.dev.v2;
 
-/**
- * **** DHIRAJ D GANDHI *******
- */
 // This is client program which connects to server.
 // It send request for Critical Section when it wants to access it
 // It waits till the time Critical Section is empty
 import com.pr.corina.lab5pr.app.models.ConsumerSocketWrapper;
-import com.pr.corina.lab5pr.app.models.Message;
 import com.pr.corina.lab5pr.app.models.Transaction;
 import com.pr.corina.lab5pr.utils.Serializer;
-import com.pr.corina.lab5pr.utils.TransactionTypes;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Monitor {
 
+    /* messageQueue - used to store messages from producer */
     public static BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+
+    /* deadLetterMessageQueue - used to store messages haven't been sent due to some exception */
+    public static BlockingQueue<String> deadLetterMessageQueue = new LinkedBlockingQueue<>();
+
+    /* consumerSocketsQueue - used to store subscribed Consumers */
     public static BlockingQueue<ConsumerSocketWrapper> consumerSocketsQueue = new LinkedBlockingQueue<>();
-    public static volatile Map<String, String> subscriberTopic = new ConcurrentHashMap<>();    //<subscribers> <topic>
-    public static volatile Map<String, String> subscriberMessages = new ConcurrentHashMap<>(); //<subscribers> <topic;message>
+
+    //public static volatile Map<String, String> subscriberTopic = new ConcurrentHashMap<>();    //<subscribers> <topic>
+    //public static volatile Map<String, String> subscriberMessages = new ConcurrentHashMap<>(); //<subscribers> <topic;message>
     static int capacity = 100;
 
     public static void main(String args[]) throws IOException, InterruptedException {
@@ -48,11 +45,7 @@ public class Monitor {
                 while (true) {
 
                     try {
-                        Object[] topicsArray = subscriberTopic.keySet().toArray();
-                        if (topicsArray.length > 0) {
-                            String firstTopic = subscriberTopic.keySet().stream().findFirst().get();
-                            out.println(firstTopic);
-                        }
+
                         String item = null;
                         item = in.readLine();
                         try {
@@ -74,10 +67,7 @@ public class Monitor {
 
         producer.start();
 
-
-        
-        
-        /* Create consumer thread */
+        /* ============== Create consumer thread =====================*/
         Thread consumer = new Thread(new Runnable() {
 
             @Override
@@ -85,64 +75,62 @@ public class Monitor {
                 while (true) {
 
                     PrintStream out = null;
+
+                    String item = null;
+                    String itemType = null;
+                    String itemTopic = null;
+                    String itemMessage = null;
+                    String itemFormat = null;
+
                     try {
-                        int counterLoop = 0;
-                        
-                        String item = null;
-                        String itemType = null;
-                        String itemTopic = null;
-                        String itemMessage = null;
+                        item = consume();
+                        /* Serialization */
+                        String[] itemValues = item.split(";");
+                        itemType = itemValues[0];
+                        itemTopic = itemValues[1];
+                        itemMessage = itemValues[2];
+                        itemFormat = itemValues[3];
 
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.println("Consumer consumed-" + itemMessage + ", TOPIC=" + itemTopic + ", ITEM_TYPE=" + itemType);
+
+                    for (ConsumerSocketWrapper consumerSocketWrapper : consumerSocketsQueue) {
+                        /* Convert Message - to be send */
+                        String itemMessageToSend = null;
                         try {
-                            item = consume();
-                            /* Serialization */
-                            String[] itemValues = item.split(";");
-                            itemType = itemValues[0];
-                            itemTopic = itemValues[1];
-                            itemMessage = itemValues[2];
-                            /*if (!itemType.equals(TransactionTypes.XML)) {
-                                Transaction readTransaction = Serializer.deserializeFromJson(itemMessage);
-                                itemMessage = Serializer.serializeToXML(readTransaction);
-                            }*/
-                            /* Add Topic */
-                            /*itemMessage = "/S/" + itemTopic + "\n" + itemMessage*/
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //itemMessage = computeReceiversParam() + itemMessage;
-                        System.out.println("Consumer consumed-" + itemMessage+", TOPIC="+itemTopic);
-
-                        for (ConsumerSocketWrapper consumerSocketWrapper : consumerSocketsQueue) {
-                             String itemMessageToSend = itemMessage;
-                            /* Check format - and serialize */
-                            if(!itemType.equals(consumerSocketWrapper.getRequiredFormat())){
-                                Transaction readTransaction = Serializer.deserializeFromJson(itemMessage);
-                                itemMessageToSend = Serializer.serializeToXML(readTransaction);
-                            }
+                            itemMessageToSend = convertMessage(itemMessage, itemFormat, consumerSocketWrapper.getRequiredFormat());
                             itemMessageToSend = "/S/" + itemTopic + "\n" + itemMessageToSend;
-                            
+
                             out = new PrintStream(consumerSocketWrapper.getSocket().getOutputStream());
                             BufferedReader in = new BufferedReader(new InputStreamReader(consumerSocketWrapper.getSocket().getInputStream()));
-                              System.out.println("CONSUMER FROM QUEUE="+consumerSocketWrapper.toString()
-                                      +"ITEM TOPIC="+itemTopic+", CONS TOPIC="+consumerSocketWrapper.getTopic());
-                            
-                            if(itemTopic.equals(consumerSocketWrapper.getTopic())){
-                                out.println(itemMessageToSend);
-                            }
-                        }
+                            /* Show Details */
+                            System.out.println("CONSUMER FROM QUEUE=" + consumerSocketWrapper.toString()
+                                    + "ITEM TOPIC=" + itemTopic + ", CONS TOPIC=" + consumerSocketWrapper.getTopic() + ", CONS_TYPE=" + consumerSocketWrapper.getRequiredFormat() + ", itemType.equals(consumerSocketWrapper.getRequiredFormat()=" + itemType.equals(consumerSocketWrapper.getRequiredFormat()));
 
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(Monitor.class.getName()).log(Level.SEVERE, null, ex);
+                            /* Send Message */
+                            if (itemTopic.equals(consumerSocketWrapper.getTopic())) {
+                                if (consumerSocketWrapper.getReceivedMsgsNr() < consumerSocketWrapper.getMsgReceiveLimit()) {
+                                    out.println(itemMessageToSend);
+                                    consumerSocketWrapper.incrementReceiveMsgsNr();
+                                }else{
+                                    throw new Exception("Limit of Messages Exceeded");
+                                }
+                            }
+                        } catch (Exception ex) {
+                            deadLetterMessageQueue.add(consumerSocketWrapper.getId() + ";" + itemMessageToSend);
+                            System.out.println("[EXCEPTION]:"+ex.getMessage());
+                            System.out.println("==== deadLetterMessageQueue:"+deadLetterMessageQueue.toString());
                         }
-                    } catch (IOException ex) {
+                    }
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ex) {
                         Logger.getLogger(Monitor.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    /*finally {
-                            out.close();
-                        }*/
 
                 }
             }
@@ -150,9 +138,9 @@ public class Monitor {
         });
 
         consumer.start();
-        
+
         /* Accept consumer */
-        while(true){
+        while (true) {
             Socket ss2 = s.accept();
             System.out.println("================================ Consumer Accepted =====================");
             BufferedReader in = new BufferedReader(new InputStreamReader(ss2.getInputStream()));
@@ -165,10 +153,18 @@ public class Monitor {
             consumerSocketsQueue.add(consumerSocketWrapp);
         }
 
-
     }
 
-  
+    public static String convertMessage(String msgs, String msgFormat, String requiredConsumerFormat) {
+        String convertedMsgs = msgs;
+        /* Check format - and serialize */
+        if (!msgFormat.equals(requiredConsumerFormat)) {
+            Transaction readTransaction = Serializer.deserializeFromJson(msgs);
+            convertedMsgs = Serializer.serializeToXML(readTransaction);
+        }
+        return convertedMsgs;
+    }
+
     public static void print_q() {
         System.out.println("---Queue elements----");
 
@@ -227,100 +223,6 @@ public class Monitor {
 
         return val;
 
-    }
-
-
-    public static void processCall(String[] callFragments) {
-        int nrOfFragments = callFragments.length;
-        System.out.println("CALL SIZE = " + callFragments.length);
-        if (nrOfFragments > 1) {
-            int callType = Integer.valueOf(callFragments[0].trim());
-            if (callType == Message.CONSUMER_DATA) {
-                processConsumerMessage(callFragments);
-            } else if (callType == Message.MESSAGE) {
-                processProducerMessage(callFragments);
-            }
-        }
-
-        System.out.println("subscriberTopic SIZE = " + subscriberTopic.size());
-        System.out.println("*** " + subscriberTopic.toString());
-    }
-
-    public static void processConsumerMessage(String[] callFragments) {
-        System.out.println("### Monitor recieved consumer's message ###");
-        String customerId = callFragments[1].trim();
-        String topic = callFragments[2].trim();
-        System.out.println("# CONSUMER_ID = " + customerId + " ... TOPIC = " + topic);
-        addCustomerTopic(Long.valueOf(customerId), topic);
-    }
-
-    public static void processProducerMessage(String[] callFragments) {
-        String topic = callFragments[1];
-        String message = callFragments[2];
-
-        String key = "";
-        for (Map.Entry<String, String> entry : subscriberTopic.entrySet()) {
-            if (entry.getValue().equals(topic)) {
-                key = entry.getKey();
-                break;
-                //System.out.println("#*#*# KEY = "+key+" ... VALUE = "+value);
-            }
-        }
-        //System.out.println("### Monitor recieved producer's message ###");
-        subscriberMessages.put(key, topic + ";" + message);
-        printSubscriberMessagesMap();
-        //System.out.println("***###"+subscriberMessages.toString());
-
-    }
-
-    public static void printSubscriberMessagesMap() {
-        System.out.println("---Subscriber Messages elements----");
-
-        for (Entry<String, String> subscriberMsgs : subscriberMessages.entrySet()) {
-            System.out.print("[" + subscriberMsgs.getValue() + "]" + subscriberMsgs.getValue() + " | ");
-        }
-        System.out.println("\n-------------");
-    }
-
-    public static synchronized void addCustomerTopic(Long id, String topic) {
-        if (subscriberTopic.size() == 0) {
-            insertIntoMap(id.toString(), topic);
-        } else {
-            modifyMap(id, topic);
-        }
-    }
-
-    private static synchronized void modifyMap(Long id, String topic) {
-        if (subscriberTopic.containsValue(topic)) {
-            String key = "";
-            String value = "";
-            for (Map.Entry<String, String> entry : getEntrySet()) {
-                if (entry.getValue().equals(topic)) {
-                    key = entry.getKey();
-                    value = entry.getValue();
-                    break;
-                    //System.out.println("#*#*# KEY = "+key+" ... VALUE = "+value);
-                }
-            }
-            removeFromMap(key);
-            key = key + ";" + id;
-            insertIntoMap(key, value);
-        } else {
-            insertIntoMap(id.toString(), topic);
-        }
-
-    }
-
-    public static synchronized void insertIntoMap(String idList, String topic) {
-        subscriberTopic.put(idList, topic);
-    }
-
-    public static synchronized void removeFromMap(String idList) {
-        subscriberTopic.remove(idList);
-    }
-
-    public static synchronized Set<Entry<String, String>> getEntrySet() {
-        return subscriberTopic.entrySet();
     }
 
 }
