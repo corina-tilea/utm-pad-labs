@@ -21,6 +21,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Table
 public class Transaction {
     
+    // de moficat daca trebuie aici - si de creat tabelul normal in cqlsh.
     
     @PrimaryKeyColumn(
       name = "id", 

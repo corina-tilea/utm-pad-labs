@@ -16,6 +16,6 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public interface TransactionRepositoryIntf extends CassandraRepository<Transaction, UUID> {
+public interface TransactionRepositoryIntf extends CassandraRepository<Transaction, Integer> {
     
 }

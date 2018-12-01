@@ -1,5 +1,5 @@
-/home/corina/NetBeansProjects/Project-Rest/app-web-service/src/main/java/com/corina/project/entity/Transaction.java
-/home/corina/NetBeansProjects/Project-Rest/app-web-service/src/main/java/com/corina/project/repository/TransactionRepositoryIntf.java
-/home/corina/NetBeansProjects/Project-Rest/app-web-service/src/main/java/com/corina/project/rest/ws/spring/boot/contoller/AppController.java
-/home/corina/NetBeansProjects/Project-Rest/app-web-service/src/main/java/com/corina/project/config/CassandraConfig.java
-/home/corina/NetBeansProjects/Project-Rest/app-web-service/src/main/java/com/corina/project/rest/ws/spring/boot/App1Application.java
+/home/corina/UTM/git-repository-utm/utm-pad-labs/Project-Rest/app-web-service/src/main/java/com/corina/project/entity/Transaction.java
+/home/corina/UTM/git-repository-utm/utm-pad-labs/Project-Rest/app-web-service/src/main/java/com/corina/project/rest/ws/spring/boot/App1Application.java
+/home/corina/UTM/git-repository-utm/utm-pad-labs/Project-Rest/app-web-service/src/main/java/com/corina/project/config/CassandraConfig.java
+/home/corina/UTM/git-repository-utm/utm-pad-labs/Project-Rest/app-web-service/src/main/java/com/corina/project/rest/ws/spring/boot/contoller/AppController.java
+/home/corina/UTM/git-repository-utm/utm-pad-labs/Project-Rest/app-web-service/src/main/java/com/corina/project/repository/TransactionRepositoryIntf.java

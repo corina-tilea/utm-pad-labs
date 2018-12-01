@@ -1,6 +1,5 @@
 com/corina/project/repository/TransactionRepositoryIntf.class
+com/corina/project/config/CassandraConfig.class
 com/corina/project/entity/Transaction.class
 com/corina/project/rest/ws/spring/boot/contoller/AppController.class
-com/corina/project/config/CassandraConfig.class
 com/corina/project/rest/ws/spring/boot/App1Application.class
-.netbeans_automatic_build

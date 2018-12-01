@@ -8,8 +8,10 @@ package com.corina.project.rest.ws.spring.boot.contoller;
 import com.corina.project.rest.ws.spring.boot.client.Client;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -31,9 +33,17 @@ public class AppController {
         return client.getWebService("/process");
     }
 
+     
     @RequestMapping(value = "/transactions", method = RequestMethod.GET)
     public @ResponseBody 
         String getTransactions(ModelMap model) throws RestClientException, IOException {
         return client.getWebService("/transactions");
+    }
+        
+    @Cacheable(value = "transaction", key = "#id") //, unless = "#result.followers < 12000"    
+    @RequestMapping(value = "/transaction/{id}", method = RequestMethod.GET)
+    public @ResponseBody 
+        String getTransactionById(@PathVariable Integer id) throws RestClientException, IOException {
+        return client.getWebService("/transaction/"+id);
     }
 }
