@@ -5,9 +5,8 @@
  */
 package com.corina.project.entity;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -24,21 +23,25 @@ public class Transaction {
     // de moficat daca trebuie aici - si de creat tabelul normal in cqlsh.
     
     @PrimaryKeyColumn(
-      name = "id", 
+      name = "account_number", 
       ordinal = 2, 
-      type = PrimaryKeyType.CLUSTERED, 
+      type = PrimaryKeyType.PARTITIONED, 
       ordering = Ordering.DESCENDING)
-    private UUID id;
+    private String accountNumber;
 
     @PrimaryKeyColumn(
-    name = "transaction_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-    private String transactionId;
+    name = "transaction_id", ordinal = 0, type = PrimaryKeyType.CLUSTERED)
+    private Integer transactionId;
+    
+    @Column("amount")
+    private Double amount;
     
     @Column("owner_name")
     private String ownerName;
+   
+    @Column("transaction_date")
+    private Date transactionDate;
     
-    @Column("account_number")
-    private String accountNumber;
     
     @Column("transaction_format")
     private String transactionFormat;
@@ -52,13 +55,31 @@ public class Transaction {
         this.accountNumber = accountNumber;
     }
 
-    public UUID getId() {
-        return id;
+    public Integer getTransactionId() {
+        return transactionId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setTransactionId(Integer transactionId) {
+        this.transactionId = transactionId;
     }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public Date getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(Date transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    
 
     public String getOwnerName() {
         return ownerName;
@@ -86,11 +107,13 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 31 * hash + Objects.hashCode(this.id);
-        hash = 31 * hash + Objects.hashCode(this.ownerName);
-        hash = 31 * hash + Objects.hashCode(this.accountNumber);
-        hash = 31 * hash + Objects.hashCode(this.transactionFormat);
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.accountNumber);
+        hash = 79 * hash + Objects.hashCode(this.transactionId);
+        hash = 79 * hash + Objects.hashCode(this.amount);
+        hash = 79 * hash + Objects.hashCode(this.ownerName);
+        hash = 79 * hash + Objects.hashCode(this.transactionDate);
+        hash = 79 * hash + Objects.hashCode(this.transactionFormat);
         return hash;
     }
 
@@ -106,16 +129,22 @@ public class Transaction {
             return false;
         }
         final Transaction other = (Transaction) obj;
-        if (!Objects.equals(this.ownerName, other.ownerName)) {
+        if (!Objects.equals(this.accountNumber, other.accountNumber)) {
             return false;
         }
-        if (!Objects.equals(this.accountNumber, other.accountNumber)) {
+        if (!Objects.equals(this.ownerName, other.ownerName)) {
             return false;
         }
         if (!Objects.equals(this.transactionFormat, other.transactionFormat)) {
             return false;
         }
-        if (!Objects.equals(this.id, other.id)) {
+        if (!Objects.equals(this.transactionId, other.transactionId)) {
+            return false;
+        }
+        if (!Objects.equals(this.amount, other.amount)) {
+            return false;
+        }
+        if (!Objects.equals(this.transactionDate, other.transactionDate)) {
             return false;
         }
         return true;
@@ -123,7 +152,9 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction{" + "id=" + id + ", ownerName=" + ownerName + ", accountNumber=" + accountNumber + ", transactionFormat=" + transactionFormat + '}';
+        return "Transaction{" + "accountNumber=" + accountNumber + ", transactionId=" + transactionId + ", amount=" + amount + ", ownerName=" + ownerName + ", transactionDate=" + transactionDate + ", transactionFormat=" + transactionFormat + '}';
     }
+
+    
     
 }
