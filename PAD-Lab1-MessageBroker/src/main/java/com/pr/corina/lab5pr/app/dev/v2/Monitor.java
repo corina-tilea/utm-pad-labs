@@ -29,7 +29,7 @@ public class Monitor {
     static int capacity = 100;
 
     public static void main(String args[]) throws IOException, InterruptedException {
-        ServerSocket s = new ServerSocket(7000);
+        ServerSocket s = new ServerSocket(7123);
         BufferedReader sc = new BufferedReader(new InputStreamReader(System.in));
 
         /* Accept producer */

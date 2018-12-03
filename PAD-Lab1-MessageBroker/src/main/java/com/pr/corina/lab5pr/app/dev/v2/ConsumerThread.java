@@ -26,7 +26,7 @@ public class ConsumerThread extends Thread {
 
     public void run() {
         try {
-            Socket s = new Socket("localhost", 7000);
+            Socket s = new Socket("localhost", 7123);
             BufferedReader sc = new BufferedReader(new InputStreamReader(System.in));
 
             //Streams

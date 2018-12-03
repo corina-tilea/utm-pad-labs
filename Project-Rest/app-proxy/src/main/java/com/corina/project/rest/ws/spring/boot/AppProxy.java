@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
  * @author corina
  */
 @SpringBootApplication
-@EnableCaching
+//@EnableCaching
 public class AppProxy {
 
     public static void main(String[] args) {

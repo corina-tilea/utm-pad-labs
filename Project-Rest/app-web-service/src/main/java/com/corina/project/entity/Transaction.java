@@ -5,7 +5,8 @@
  */
 package com.corina.project.entity;
 
-import java.util.Date;
+import com.datastax.driver.core.LocalDate;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.util.Objects;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -18,6 +19,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author andrei
  */
 @Table
+@XStreamAlias("transaction")
 public class Transaction {
     
     // de moficat daca trebuie aici - si de creat tabelul normal in cqlsh.
@@ -27,22 +29,27 @@ public class Transaction {
       ordinal = 2, 
       type = PrimaryKeyType.PARTITIONED, 
       ordering = Ordering.DESCENDING)
+    @XStreamAlias("accountNumber")
     private String accountNumber;
 
     @PrimaryKeyColumn(
     name = "transaction_id", ordinal = 0, type = PrimaryKeyType.CLUSTERED)
+    @XStreamAlias("transactionId")
     private Integer transactionId;
     
     @Column("amount")
+    @XStreamAlias("amount")
     private Double amount;
     
     @Column("owner_name")
+    @XStreamAlias("ownerName")
     private String ownerName;
    
     @Column("transaction_date")
-    private Date transactionDate;
+    @XStreamAlias("transaction_date")
+    private LocalDate transactionDate;
     
-    
+    @XStreamAlias("transaction_format")
     @Column("transaction_format")
     private String transactionFormat;
 
@@ -71,11 +78,11 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public Date getTransactionDate() {
+    public LocalDate getTransactionDate() {
         return transactionDate;
     }
 
-    public void setTransactionDate(Date transactionDate) {
+    public void setTransactionDate(LocalDate transactionDate) {
         this.transactionDate = transactionDate;
     }
 
